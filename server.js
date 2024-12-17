@@ -10,20 +10,25 @@ app.use(cors());
 app.use(express.json());
 const PORT = 8080;
 
+const { default: LoginActivity } = require("./models/loginActivity");
+
 const migrateUsers = async () => {
   try {
     console.log("Connecting to MongoDB...");
     await connectToDB();
 
-    const users = await User.updateMany(
-      { verificationCode: { $exists: false } },
-      { $set: { verificationCode: "defaultCode123" } }
+    const result = await User.updateMany(
+      { status: { $type: "string" } }, // Target documents where status is a string
+      { $set: { verificationCode: "code" } } // Update status to "success"
     );
 
-    console.log(`Migrated ${users.nModified} users with a verification code.`);
+    console.log(
+      `Migrated ${result.modifiedCount} documents with status updated to "success".`
+    );
   } catch (error) {
     console.error("Error during migration:", error.message);
   } finally {
+    // Ensure database connection is closed properly
     mongoose.connection.close();
   }
 };
@@ -34,9 +39,26 @@ const getData = async () => {
   try {
     await connectToDB();
 
-    const users = await User.find();
+    const users = await LoginActivity.find();
 
     console.log("All Users:", users);
+    console.log(
+      "Random code:",
+      Math.floor(Math.random() * 9000 + 1000).toString()
+    );
+    // const email = "spvarun47@gmail.com";
+    const email = "varun.sp2021@vitstudent.ac.in";
+    const user = await User.findOne({ email });
+
+    // console.log("The latest user:", user);
+    const latestSession = await LoginActivity.find({
+      userId: user._id,
+    })
+      .sort({ createdAt: -1 })
+      .limit(2);
+
+    console.log("The lastsession:", latestSession);
+
     return users;
   } catch (error) {
     console.error("Error retrieving users:", error.message);
@@ -45,7 +67,7 @@ const getData = async () => {
   }
 };
 
-// getData();
+getData();
 
 const sendEmail = async (email) => {
   console.log("Sending email for", email);

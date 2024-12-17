@@ -13,13 +13,12 @@ const userSchema = new Schema({
     type: String,
     unique: [true, "Username already exists"],
     required: [true, "Username is required"],
-    // match: [/^(?=.{0,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/, "Username is invalid, it should contain 8-20 alphanumeric characters and be unique!"],
   },
 
   image: {
     type: String,
   },
-  // check the email verification
+
   verifiedViaEmail: {
     type: Boolean,
     required: [true, "Verification is required"],
@@ -29,7 +28,11 @@ const userSchema = new Schema({
   verificationCode: {
     type: String,
     required: [true, "Verification code is required"],
-    default: "defaultCode123", // Default verification code
+  },
+
+  verificationCodeExpires: {
+    type: Date,
+    required: true,
   },
 });
 
